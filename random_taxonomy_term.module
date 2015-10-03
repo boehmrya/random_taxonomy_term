@@ -63,17 +63,6 @@ function random_taxonomy_term_form($form, &$form_state) {
     '#description' => t('the vocabulary from which to pull random terms'),
     '#required' => TRUE,
   );
-  $form['random_taxonomy_term_sorting'] = array(
-    '#type' =>'select',
-    '#title' => t('Sorting'),
-    '#default_value' => variable_get('random_taxonomy_term_sorting', 'ASC'),
-    '#options' => array(
-      0 => t('ASC'),
-      1 => t('DESC'),
-    ),
-    '#description' => t('how to sort the terms'),
-    '#required' => TRUE,
-  );
   // Number of Terms to Pull-Out and Display
   $form['random_taxonomy_term_number'] = array(
     '#type' => 'select',
