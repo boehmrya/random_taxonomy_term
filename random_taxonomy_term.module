@@ -17,3 +17,87 @@ function random_taxonomy_term_help($path, $arg) {
   	return t('Random Taxonomy Term allows site administrators the ability to randomly display taxonomy terms from a configurable vocabulary.');
   }
 }
+
+
+/**
+ * Implements hook_permission().
+ */
+function random_taxonomy_term_permission() {
+  return array(
+    'administer random taxonomy terms' => array(
+      'title' => t('Administer Random Taxonomy Terms'),
+      'description' => t('Set a configurable vocabulary to pull out random terms to appear in a block.'),
+    ),
+  );
+}
+
+
+/**
+* Implements hook_menu().
+*/
+function random_taxonomy_term_menu() {
+  $items = array();
+  $items['admin/config/people/random_taxonomy_term'] = array(
+    'title' => 'User Warn',
+    'description' => 'Configuration for the Random Taxonomy Term module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('random_taxonomy_term_form'),
+    'access arguments' => array('administer random taxonomy terms'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+
+/**
+*  Form Builder: Create and display the Random Taxonomy Term configuration settings form.
+*/
+function random_taxonomy_term_form($form, &$form_state) {
+  // Vocabulary to pull random terms from
+  $form['random_taxonomy_term_vocabulary'] = array(
+    '#type' =>'select',
+    '#title' => t('Vocabulary'),
+    '#default_value' => variable_get('random_taxonomy_term_vocabulary', ''),
+    '#options' => 
+    '#description' => t('the vocabulary from which to pull random terms'),
+    '#required' => TRUE,
+  );
+  // Number of Terms to Pull-Out and Display
+  $form['random_taxonomy_term_number'] = array(
+    '#type' => 'select',
+    '#default_value' => variable_get('random_taxonomy_term_number', ''),
+    '#title' => t('Number of Terms'),
+    '#options' => array(
+      0 => t('1'),
+      1 => t('2'),
+      2 => t('3'),
+      3 => t('4'),
+      4 => t('5'),
+      5 => t('6'),
+      6 => t('7'),
+      7 => t('8'),
+      8 => t('9'),
+      9 => t('10'),
+    ),
+    '#required' => TRUE,
+    '#description' => t('The number of terms to randomly pull out and display.'),
+  );
+  return system_settings_form($form);
+}
+
+
+//Returns an array of all vocabularies.  Used in select list in configuration form.
+function random_taxonomy_term_vocabularies() {
+  $result = db_query("SELECT nid, title FROM {node}");
+}
+
+
+
+
+
+
+
+
+
+
+
