@@ -58,7 +58,7 @@ function random_taxonomy_term_form($form, &$form_state) {
   $form['random_taxonomy_term_vocabulary'] = array(
     '#type' =>'select',
     '#title' => t('Vocabulary'),
-    '#default_value' => variable_get('random_taxonomy_term_vocabulary', ''),
+    '#default_value' => variable_get('random_taxonomy_term_vocabulary'),
     '#options' => random_taxonomy_term_vocabularies(),
     '#description' => t('the vocabulary from which to pull random terms'),
     '#required' => TRUE,
@@ -70,7 +70,6 @@ function random_taxonomy_term_form($form, &$form_state) {
     '#options' => array(
       0 => t('Ascending'),
       1 => t('Descending'),
-      2 => t('Random'),
     ),
     '#description' => t('how to sort the terms'),
     '#required' => TRUE,
@@ -137,33 +136,33 @@ function random_taxonomy_term_block_info() {
  * The name of the requested block.
  */
 function random_taxonomy_term_block_view($delta = '') {
-  //Create an empty block
-  $block = array(
-    'subject' => '',
-    'content' => '',
-  );
   //Check which block is being requested
-  switch ($delta) {
-    case 'random_taxonomy_terms':
-      $raw_terms = random_taxonomy_term_terms_final();
-      $formatted_terms = theme('item_list', $raw_terms);
-      $block['content'] = $formatted_terms;
+  if ($delta == 'random_taxonomy_terms') {
+    $raw_terms = random_taxonomy_term_terms_final();
+    dpm($raw_terms);
+    $theme_args = array(
+      'items' => $raw_terms,
+      'type' => 'ol',
+    );
+    $content = theme('item_list', $theme_args);
+    $block = array(
+      'subject' => t('Random Terms'),
+      'content' => $content,
+    );
+    return $block;
   }
  
-  return $block;
 }
 
 
 //Returns an array of all terms that match the selected vocabulary.  Used in select list in configuration form.
 function random_taxonomy_term_all_terms() {
-  $selected_vocabulary = variable_get('random_taxonomy_term_vocabulary');
-  //Pull out the vid
-  $vid_result = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = :vocabulary", array(':vocabulary' => $selected_vocabulary));
-  if ($vid_result) {
-    while ($vid_row = $vid_result->fetchAssoc()) {
-      $vid = $row['vid'];
-    }
-    $terms_result = db_query("SELECT name FROM {taxonomy_term_data} WHERE vid = :vid", array(':vid' => $vid));
+  //vid of vocabulary
+  $vid = variable_get('random_taxonomy_term_vocabulary');
+  $terms_result = db_query("SELECT name FROM {taxonomy_term_data} WHERE vid = :vid", array(':vid' => $vid));
+
+  if ($terms_result) {
+    $terms = array();
     while ($terms_row = $terms_result->fetchAssoc()) {
       $terms = $terms_row['name'];
     }
@@ -179,16 +178,19 @@ function random_taxonomy_term_all_terms() {
 function random_taxonomy_term_terms_final() {
   $terms = random_taxonomy_term_all_terms();
   $number_terms = variable_get('random_taxonomy_term_number');
+  if ($number_terms > count($terms)) {
+    $number_terms = count($terms);
+  }
   $random_terms = array_rand($terms, $number_terms);
   $sort_order = variable_get('random_taxonomy_term_sorting');
-  if ($sort_order == 'Ascending') {
+  if ($sort_order == 0) {
     return sort($random_terms);
   }
-  if ($sort_order == 'Descending') {
+  if ($sort_order == 1) {
     return array_reverse(sort($random_terms));
   }
   else {
-    return shuffle($random_terms);
+    return $random_terms;
   }
 }
 
