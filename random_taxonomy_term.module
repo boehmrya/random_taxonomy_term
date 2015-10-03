@@ -1,0 +1,19 @@
+<?php
+
+
+/**
+* @file
+* Random Taxonomy Term Module File
+*
+* This module allows site administrators to display a number of terms
+* randomly in a block.  
+*/
+
+/**
+* Implements hook_help().
+*/
+function random_taxonomy_term_help($path, $arg) {
+  if ($path == 'admin/help#random_taxonomy_term') {
+  	return t('Random Taxonomy Term allows site administrators the ability to randomly display taxonomy terms from a configurable vocabulary.');
+  }
+}

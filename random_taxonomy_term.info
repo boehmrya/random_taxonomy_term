@@ -1,0 +1,4 @@
+name = Random Taxonomy Term
+description = Allows site admins to randomly display a number of terms in a block
+core = 7.x
+files[] = random_taxonomy_term.module
