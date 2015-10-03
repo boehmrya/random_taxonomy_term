@@ -63,10 +63,21 @@ function random_taxonomy_term_form($form, &$form_state) {
     '#description' => t('the vocabulary from which to pull random terms'),
     '#required' => TRUE,
   );
+  $form['random_taxonomy_term_sorting'] = array(
+    '#type' =>'select',
+    '#title' => t('Sorting'),
+    '#default_value' => variable_get('random_taxonomy_term_sorting', 'ASC'),
+    '#options' => array(
+      0 => t('ASC'),
+      1 => t('DESC'),
+    ),
+    '#description' => t('how to sort the terms'),
+    '#required' => TRUE,
+  );
   // Number of Terms to Pull-Out and Display
   $form['random_taxonomy_term_number'] = array(
     '#type' => 'select',
-    '#default_value' => variable_get('random_taxonomy_term_number', ''),
+    '#default_value' => variable_get('random_taxonomy_term_number'),
     '#title' => t('Number of Terms'),
     '#options' => array(
       0 => t('1'),
@@ -104,6 +115,64 @@ function random_taxonomy_term_vocabularies() {
   	return FALSE;
   }
 }
+
+
+/**
+* Implements hook_block_info().
+*/
+function random_taxonomy_term_block_info() {
+  $blocks = array();
+  $blocks['random_taxonomy_terms'] = array(
+    'info' => t('Random Taxonomy Terms'),
+  );
+  return $blocks;
+}
+
+
+/**
+ * Implements hook_block_view().
+ * 
+ * @param $delta
+ * The name of the requested block.
+ */
+function random_taxonomy_term_block_view($delta = '') {
+  //Create an empty block
+  $block = array(
+    'subject' => '',
+    'content' => '',
+  );
+  //Check which block is being requested
+  switch ($delta) {
+    case 'random_taxonomy_terms':
+      $raw_terms = random_taxonomy_term_terms();
+      $formatted_terms = theme('item_list', $raw_terms);
+      $block['content'] = $formatted_terms;
+  }
+ 
+  return $block;
+}
+
+
+//Returns an array of all vocabularies.  Used in select list in configuration form.
+function random_taxonomy_term_terms() {
+  $selected_vocabulary = variable_get('random_taxonomy_term_vocabulary');
+  //Pull out the vid
+  $vid_result = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = :vocabulary", array(':vocabulary' => $selected_vocabulary));
+  if ($vid_result) {
+    while ($vid_row = $vid_result->fetchAssoc()) {
+      $vid = $row['vid'];
+    }
+    $terms_result = db_query("SELECT name FROM {taxonomy_term_data} WHERE vid = :vid", array(':vid' => $vid));
+    while ($terms_row = $terms_result->fetchAssoc()) {
+      $terms = $terms_row['name'];
+    }
+    return $terms;
+  }
+  else {
+    return FALSE;
+  }
+}
+
 
 
 
