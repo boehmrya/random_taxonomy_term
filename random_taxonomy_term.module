@@ -63,6 +63,18 @@ function random_taxonomy_term_form($form, &$form_state) {
     '#description' => t('the vocabulary from which to pull random terms'),
     '#required' => TRUE,
   );
+  $form['random_taxonomy_term_sorting'] = array(
+    '#type' =>'select',
+    '#title' => t('Sorting'),
+    '#default_value' => variable_get('random_taxonomy_term_sorting', 'Ascending'),
+    '#options' => array(
+      0 => t('Ascending'),
+      1 => t('Descending'),
+      2 => t('Random'),
+    ),
+    '#description' => t('how to sort the terms'),
+    '#required' => TRUE,
+  );
   // Number of Terms to Pull-Out and Display
   $form['random_taxonomy_term_number'] = array(
     '#type' => 'select',
@@ -133,7 +145,7 @@ function random_taxonomy_term_block_view($delta = '') {
   //Check which block is being requested
   switch ($delta) {
     case 'random_taxonomy_terms':
-      $raw_terms = random_taxonomy_term_terms();
+      $raw_terms = random_taxonomy_term_terms_final();
       $formatted_terms = theme('item_list', $raw_terms);
       $block['content'] = $formatted_terms;
   }
@@ -142,8 +154,8 @@ function random_taxonomy_term_block_view($delta = '') {
 }
 
 
-//Returns an array of all vocabularies.  Used in select list in configuration form.
-function random_taxonomy_term_terms() {
+//Returns an array of all terms that match the selected vocabulary.  Used in select list in configuration form.
+function random_taxonomy_term_all_terms() {
   $selected_vocabulary = variable_get('random_taxonomy_term_vocabulary');
   //Pull out the vid
   $vid_result = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE name = :vocabulary", array(':vocabulary' => $selected_vocabulary));
@@ -159,6 +171,24 @@ function random_taxonomy_term_terms() {
   }
   else {
     return FALSE;
+  }
+}
+
+
+//Randomly pulls out a given number of terms, and sorts them based on the admin's choice
+function random_taxonomy_term_terms_final() {
+  $terms = random_taxonomy_term_all_terms();
+  $number_terms = variable_get('random_taxonomy_term_number');
+  $random_terms = array_rand($terms, $number_terms);
+  $sort_order = variable_get('random_taxonomy_term_sorting');
+  if ($sort_order == 'Ascending') {
+    return sort($random_terms);
+  }
+  if ($sort_order == 'Descending') {
+    return array_reverse(sort($random_terms));
+  }
+  else {
+    return shuffle($random_terms);
   }
 }
 
