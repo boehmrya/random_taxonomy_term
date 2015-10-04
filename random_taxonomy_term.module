@@ -164,7 +164,7 @@ function random_taxonomy_term_all_terms() {
   if ($terms_result) {
     $terms = array();
     while ($terms_row = $terms_result->fetchAssoc()) {
-      $terms = $terms_row['name'];
+      $terms[] = $terms_row['name'];
     }
     return $terms;
   }
@@ -177,20 +177,28 @@ function random_taxonomy_term_all_terms() {
 //Randomly pulls out a given number of terms, and sorts them based on the admin's choice
 function random_taxonomy_term_terms_final() {
   $terms = random_taxonomy_term_all_terms();
-  $number_terms = variable_get('random_taxonomy_term_number');
+  $number_terms = variable_get('random_taxonomy_term_number') + 1;
   if ($number_terms > count($terms)) {
     $number_terms = count($terms);
   }
+  //Create the random array
+  $final_random_terms = array();
   $random_terms = array_rand($terms, $number_terms);
+  foreach ($random_terms as $random_term) {
+    $final_random_terms[] = $terms[$random_term];
+  }
+  //Sort based on selection
   $sort_order = variable_get('random_taxonomy_term_sorting');
   if ($sort_order == 0) {
-    return sort($random_terms);
+    sort($final_random_terms);
+    return $final_random_terms;
   }
   if ($sort_order == 1) {
-    return array_reverse(sort($random_terms));
+    sort($final_random_terms);
+    return array_reverse($final_random_terms);
   }
   else {
-    return $random_terms;
+    return $final_random_terms;
   }
 }
 
